@@ -1,0 +1,334 @@
+#include <xinu.h>
+#include <stdbool.h>
+struct node
+{
+	char *key;
+	char *data;
+	struct node *next;
+};
+struct cache_monitoring
+{
+	int total_hits;
+	int total_accesses;
+	int total_set_success;
+	int cache_size;
+	int num_keys;
+	int total_evictions;
+};
+int ccounter=0;
+struct cache_monitoring cache_metadata;
+struct node *head=NULL;
+struct node *current=NULL;
+
+unsigned long hash_function(char *string_to_hash)
+{
+	unsigned long hash_heuristic=5381;
+	
+//display the list
+/*void printList() {
+   struct node *ptr = head;
+   printf("\n[ ");
+	
+   //start from the beginning
+   while(ptr != NULL) {
+      printf("(%d,%d) ",ptr->key,ptr->data);
+      ptr = ptr->next;
+   }
+	
+   printf(" ]");
+}*/
+
+//insert link at the first location
+void insertFirst(char *key, char *data) {
+   //create a link
+   struct node *link = (struct node*)xmalloc(sizeof(struct node));
+   if((int*)link!=-1)
+   {
+	
+  // printf("%d,%d\n",(int*)link,ccounter++);
+   link->key = key;
+   link->data = data;
+	
+   //point it to old first node
+   link->next = head;
+	
+   //point first to new first node
+   head = link;
+}
+
+//delete first item
+struct node* deleteFirst() {
+
+   //save reference to first link
+   struct node *tempLink = head;
+	
+   //mark next to first link as first 
+   head = head->next;
+	
+   //return the deleted link
+   return tempLink;
+}
+
+//is list empty
+bool isEmpty() {
+   return head == NULL;
+}
+
+int length() {
+   int length = 0;
+   struct node *current;
+	
+   for(current = head; current != NULL; current = current->next) {
+      length++;
+   }
+	
+   return length;
+}
+
+//find a link with given key
+struct node* find(char *key) {
+
+   //start from the first link
+   struct node* current = head;
+
+   //if list is empty
+   if(head == NULL) {
+      return NULL;
+   }
+
+   //navigate through list
+   while(current->key != key) {
+	
+      //if it is last node
+      if(current->next == NULL) {
+         return NULL;
+      } else {
+         //go to next link
+         current = current->next;
+      }
+   }      
+	
+   //if data found, return the current Link
+   return current;
+}
+
+//delete a link with given key
+struct node* delete(char *key) {
+
+   //start from the first link
+   struct node* current = head;
+   struct node* previous = NULL;
+	
+   //if list is empty
+   if(head == NULL) {
+      return NULL;
+   }
+
+   //navigate through list
+   while(current->key != key) {
+
+      //if it is last node
+      if(current->next == NULL) {
+         return NULL;
+      } else {
+         //store reference to current link
+         previous = current;
+         //move to next link
+         current = current->next;
+      }
+   }
+
+   //found a match, update the link
+   if(current == head) {
+      //change first to point to next link
+      head = head->next;
+   } else {
+      //bypass the current link
+      previous->next = current->next;
+   }    
+	
+   return current;
+}
+
+void sort() {
+
+   int i, j, k, tempKey, tempData;
+   struct node *current;
+   struct node *next;
+	
+   int size = length();
+   k = size ;
+	
+   for ( i = 0 ; i < size - 1 ; i++, k-- ) {
+      current = head;
+      next = head->next;
+		
+      for ( j = 1 ; j < k ; j++ ) {   
+
+         if ( current->data > next->data ) {
+            tempData = current->data;
+            current->data = next->data;
+            next->data = tempData;
+
+            tempKey = current->key;
+            current->key = next->key;
+            next->key = tempKey;
+         }
+			
+         current = current->next;
+         next = next->next;
+      }
+   }   
+}
+
+void reverse(struct node** head_ref) {
+   struct node* prev   = NULL;
+   struct node* current = *head_ref;
+   struct node* next;
+	
+   while (current != NULL) {
+      next  = current->next;
+      current->next = prev;   
+      prev = current;
+      current = next;
+   }
+	
+   *head_ref = prev;
+}
+
+int kv_init2()
+{
+	xmalloc_init();
+	cache_metadata.total_hits=0;
+	cache_metadata.total_accesses=0;
+	cache_metadata.total_set_success=0;
+	cache_metadata.cache_size=0;
+	cache_metadata.num_keys=0;
+	cache_metadata.total_evictions=0;
+}
+
+int kv_set2(char *key, char *value)
+{
+	if(sizeof(key)<=0 && sizeof(value)<0)
+	{
+		//size error
+		return 1;
+	}
+	else
+	{
+		struct node *findelement=find(key);
+		if(findelement!=NULL)
+		{
+			//element is not present in cache simply add;
+			insertFirst(key,value);
+			return 0;
+		}
+		else
+		{
+			//element already exist apply lru and add it in front of the list again
+			delete(key);
+			insertFirst(key,value);
+			return 0;
+		}
+	}
+}
+char *kv_get2(char *key)
+{
+	//update total_accesses
+	cache_metadata.total_accesses++;
+
+	struct node *getelement=find(key);
+	if(getelement!=NULL)
+	{
+		//element found its a hit
+		//updating the hit
+		cache_metadata.total_hits++;
+		
+		//return the value of that key
+		return getelement->data;
+	}
+	else
+	{
+		//its a miss couldnt find the data in the cache
+		return NULL;
+	}
+}
+bool kv_delete2(char *key)
+{
+	struct node*findelement=find(key);
+	if(findelement!=NULL)
+	{
+		//key found successfully delete it 
+		delete(key);
+		return true;
+	}
+	else
+	{
+		//key not found cant delete it from the cache
+		return false;
+	}
+}
+void kv_reset2()
+{
+	//empty the linked list
+	while(!isEmpty())
+	{
+		struct node *temp=deleteFirst();	
+	}
+}
+int get_cache_info2(char *kind)
+{
+	if(strcmp(kind,"total_hits")==0)
+	{
+		return cache_metadata.total_hits;	
+	}
+	else if(strcmp(kind,"total_accesses")==0)
+	{
+		return cache_metadata.total_accesses;
+	}
+	else if(strcmp(kind,"total_set_success")==0)
+	{
+		return cache_metadata.total_set_success;
+	}
+	else if(strcmp(kind,"cache_size")==0)
+	{
+		return cache_metadata.cache_size;
+	}
+	else if(strcmp(kind,"num_keys")==0)
+	{
+		return cache_metadata.num_keys;
+	}
+	else if(strcmp(kind,"total_evictions")==0)
+	{
+		return cache_metadata.total_evictions;
+	}
+	else
+	{
+		return -1;
+	}
+}
+char** most_popular_keys2(int k)
+{
+	return NULL;
+}
+
+int kv_init()
+{
+	return 1;
+}
+int kv_set(char *key, char*value)
+{	
+	return 1;
+}
+char *kv_get(char *key)
+{
+	return NULL;
+}
+bool kv_delete(char *key)
+{
+	return false;
+}
+void kv_reset()
+{
+	printf("hello");
+}

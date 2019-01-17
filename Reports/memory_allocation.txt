@@ -1,0 +1,18 @@
+In xinu shell enter the function 'memory' to run the program for low-level memory fragmentation.
+
+The program structure consists of 2 parts:
+-the xsh_memory.c file in the shell directory 
+-the xmalloc_test.c in the system directory
+
+The xsh_memory.c file consists of the calls to the below 3 functions.
+It first function call will always be xmalloc_init followed by xmalloc and xfree.
+
+
+The xmalloc_test has the following functions:
+xmalloc_init(): This function initializes the heap structure values and makes buffer pools using the size and buffers, my code design makes 9 buffer pools with sizes 8,16,32... and a number of buffers 90,80,70... respectively. This function makes a system call to the inbuilt function mkbufpool which will give the pool id's of the buffers and this, in turn, gets stored in the heap structure.
+
+*xmalloc(): this function allocates the buffers from each pool according to the size of the variable passed in the function. This function uses an inbuilt function of getbuf which gets a buffer from the initialized buffer pools and allocates that buffer pointer to the variable that calls the function. This function also sets the parameters for the initialized heap.
+
+xheap_snapshot(): this function prints the current status of the heap by calling the structure of the heap with the heap parameters in it. The parameters printed by this function is pool_id, buffer_size, total_buffers, allocated_bytes, allocated_buffers and the fragmented_bytes of each pool in the memory.
+
+xfree(): This function first searches for the variable_id that is the assigned memory address in the heap structure and then updates the heap structure. This function then calls the freebuf function in xinu by passing the address of the buffer from the pool, this function, in turn, frees the buffer of the address passed to the freebuf function.

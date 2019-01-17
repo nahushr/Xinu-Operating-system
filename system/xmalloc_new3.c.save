@@ -1,0 +1,180 @@
+//#include<string.h>
+#include <xinu.h>
+//#include <string.h>
+//#include <stdio.h>
+//#include <stdlib.h>
+typedef struct my_struct
+{
+	bpid32 pool_id[1000];
+	int buffer_size[1000];
+	int total_buffers[1000];
+	int allocated_bytes[1000];
+	int allocated_buffers[1000];
+	int fragmented_bytes[1000];
+	
+}my_struct;
+
+/*typedef struct allocated_struct
+{
+	bpid32 pool_id[1000];
+	int buffer_size[1000];
+	int total_buffers[1000];
+	int allocated_bytes[1000];
+	int allocated_buffers[1000];
+	int fragmented_bytes[1000];
+}allocated_struct;*/
+struct my_struct struc;
+//struct allocated_struct allocated;
+int counter=0;
+
+
+void *xmalloc_init3()
+{
+	//printf("%d",bufinit());
+	
+	int x=0;
+	for(x=0;x<1000;x++)
+	{
+		struc.pool_id[x]=0;
+		struc.buffer_size[x]=0;
+		struc.total_buffers[x]=0;
+		struc.allocated_bytes[x]=0;
+		struc.allocated_buffers[x]=0;
+		struc.fragmented_bytes[x]=0;
+	}
+	
+	//bpid32 pool_id[7];
+	//struct my_struct struc;
+	//printf("im here\n");
+	int i=0;
+	int32 size=32;
+	int32 no_of_buffers=80;
+	for(i=0;i<7;i++)
+	{
+		struc.pool_id[i]=mkbufpool(size,no_of_buffers);
+		struc.buffer_size[i]=size;
+		struc.total_buffers[i]=no_of_buffers;
+		//printf("POOL ID:%d\t BUFFER SIZE:%d\t TOTAL BUFFERS:%d\t\n",struc.pool_id[i],struc.buffer_size[i],struc.total_buffers[i]);
+		size=size*2;
+		no_of_buffers=no_of_buffers-10;
+	}
+}
+void* xmalloc3(int32 size)
+{
+	if(size<=0)
+	{
+		return;	
+	}
+	/*else
+	{
+		//struct my_struct struc;
+		int i=0;
+		for(i=0;i<7;i++)
+		{
+			//printf("%d struct\n",struc.pool_id[i]);
+			if(size<(struc.buffer_size[i]*struc.total_buffers[i]))
+			{
+				//move to allocated buffers
+				//allocated.pool_id[counter]=struc.pool_id[i];
+				//allocated.buffer_size[counter]=struc.buffer_size[i];
+				//allocated.total_buffers[counter]=sturc.total_buffers[i];
+				//allocated.allocated_bytes[counter]=size;
+				if(size<struc.buffer_size[i])
+				{
+					struc.total_buffers[i]=struc.total_buffers[i]-1;
+					struc.allocated_bytes[i]=struc.allocated_bytes[i]+size;
+					struc.allocated_buffers[i]=struc.allocated_buffers[i]+1
+					return (void*)getbuf(struc.pool_id[i]);
+				}
+				else
+				{
+					counter=struc.buffer_size[i]l
+					while(	
+			
+
+			}
+					
+		}
+	}*/
+	int i=0;
+	for(i=0;i<7;i++)
+	{
+		if(size<struc.buffer_size[i])
+		{
+			if(struc.allocated_buffers[i]<struc.total_buffers[i])
+			{
+				struc.allocated_buffers[i]=struc.allocated_buffers[i]+1;
+				struc.allocated_bytes[i]=struc.allocated_bytes[i]+size;
+				struc.fragmented_bytes[i]=(struc.allocated_buffers[i]*struc.buffer_size[i])-struc.allocated_bytes[i];
+				//struc.total_buffers[i]=struc.total_buffers[i]-1;
+				return getbuf(struc.pool_id[i]);
+			}
+		}
+	}
+	
+}
+char* xheap_snapshot3()
+{
+	int i=0;
+	char *ans=getmem(sizeof;
+	for(i=0;i<7;i++)
+	{
+		//char* ans="";
+		char temp[32];
+		sprintf(temp,"%d",struc.pool_id[i]);
+		ans=strncat(ans,"pool_id=",8);
+		ans=strncat(ans,temp,1);
+		ans=strncat(ans,",  ",3);
+		
+		char temp1[32];
+		sprintf(temp1,"%d",struc.buffer_size[i]);
+		ans=strncat(ans,"buffer_size=",12);
+		ans=strncat(ans,temp1,4);
+		ans=strncat(ans,",  ",3);
+
+		char temp2[32];
+		sprintf(temp2,"%d",struc.total_buffers[i]);
+		ans=strncat(ans,"total_buffers=",14);
+		ans=strncat(ans,temp2,2);
+		ans=strncat(ans,",  ",3);
+
+		char temp3[32];
+		sprintf(temp3,"%d",struc.allocated_bytes[i]);
+		ans=strncat(ans,"allocated_bytes=",16);
+		ans=strncat(ans,temp3,4);
+		ans=strncat(ans,",  ",3);
+
+		char temp4[32];
+		sprintf(temp4,"%d",struc.allocated_buffers[i]);
+		ans=strncat(ans,"allocated_buffers=",18);
+		ans=strncat(ans,temp4,2);
+		ans=strncat(ans,",  ",3);
+
+		char temp5[32];
+		sprintf(temp5,"%d",struc.fragmented_bytes[i]);
+		ans=strncat(ans,"fragmented_bytes=",17);
+		ans=strncat(ans,temp5,4);
+		ans=strncat(ans,",  \n",5);
+
+		//printf("%s",ans);
+
+		//break;
+//		return ans;
+		//printf("pool_id=%d,  buffer_size=%d,  total_buffers=%d,  allocated_bytes=%d,  allocated_buffers=%d,  fragmented_bytes=%d\n", struc.pool_id[i],struc.buffer_size[i],struc.total_buffers[i],struc.allocated_bytes[i],struc.allocated_buffers[i],struc.fragmented_bytes[i]);
+		if(struc.buffer_size[i]==0)
+		{
+			break;
+		}	
+	}
+	return ans;
+} 
+void xmalloc_new3()
+{
+	//printf("in xmalloc_new3\n");
+	xmalloc_init3();
+	
+	void* a=xmalloc3(23);
+	printf("%s",xheap_snapshot3());
+	void* b=xmalloc3(23);
+	//xheap_snapshot3();
+}

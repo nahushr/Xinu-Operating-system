@@ -1,0 +1,17 @@
+Zombie Process: A zombie process in a unix or linux system is a process which has terminated from execution but which still has an entry in the process table of the system. This entry is in the proces table is still maintained by the operating system so that the parent of the zombie process knows the exits status of the process, once the parent process has read the status of the zombie process via the system call in the linux system the entry of the zombie process is removed from theprocess table. A zombie process generally stays in the system for a relatively short period of time, if it stays for a long period then it can cause an error or a resource leak in the system
+
+Orphan Process: A orphan process in a unix or a linux system is a process which is still executing but has no parent, that is the parent of the orphan process has already died in this case this type of process is immediately adopted by the init system process, this operation is called re-parenting and is done automatically by the unix operating system. A process can become an orphan process intentionally or unintentionally. 
+
+References:
+https://en.wikipedia.org/wiki/Zombie_process
+https://en.wikipedia.org/wiki/Orphan_process
+
+Exec system call: exec() is a system call in a linux and unix syste. The following changes occur in the system when a exec() call is executed:
+- an exec() system call replaced the previously executable file with a new file, this file can be a process too, the entire content of a process is replaced with a new file.
+- the user data segment which executes the exec() system call is replaced with the data fie whose name is provided in the argument while calling the exec() system call.
+- The process PID is not changed since we are not creating a new process but just replacing one process with another.
+- When executing a exec() system call all the threads will be terminated and the new process replaces the old system threads.
+
+References:
+https://linuxhint.com/linux-exec-system-call
+

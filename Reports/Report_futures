@@ -1,0 +1,26 @@
+FUTURE EXCLUSIVE
+-This mode of operation involves only 2 threads or rather process. One is the producer and one is the consumer. 
+-We first allocate memory to the future, the memory to the future is allocated using getmem system call. 
+-The producer will then call the future_set system call created in the file future.c. If the mode is FUTURE_EXCLUSIVE and the state of the future is FUTURE_EMPTY or FUTURE_WAITING we disable all the interrupts and the process id of the current process.
+-After getting the process id I’m adding the value passed to the future_set function as the value of my future and then setting the pid of the set_queue as the current process id
+-The state of the process is then changed to FUTURE_READY which indicated the consumer, and then resumes the state of the current process
+-When the consumer tries to get the future value we check if the future is not in the ready state and set its state to the FUTURE_WAITING state, then the function checks if there are more than one consumers trying to read from the producer if that’s the case we return from the future_get function.
+-The process is then suspended till the the producer writes to the buffer, the value is then taken from the future buffer and stored in the pointer value and printed 
+
+FUTURE SHARED
+-This mode of operation involves one producer and 4 consumers so there are 5 total threads or rather processes in xinu.
+-We first allocate memory to the future, the memory to the future is allocated using getmem system call
+-The producer will then call the future_set system call created in future.c. If the mode is FUTURE_SHARED and the state is FUTURE_EMPTY or FUTURE_WAITING we disable all the interrupts and get the current process id of the process in the system.
+-we then set the value of the future as the value passed in the set function and set the state as FUTURE_READY
+-Also in FUTURE_SHARED we have to check whether the process id in the get queue is 0 or no, if its not 0 we remove that element from the get_queue and then move the pointer to the next element in the queue this is done till all the elements of the get queue are traversed.
+-For future_get in FUTURE_SHARED mode we check if the future state is not FUTURE_READY we then add the process id in the get queue and suspend the process till the producer writes the value of the future. After the producer sets the future value and resumes the process we read the value from the future and store it in our pointer value.
+
+FUTURE QUEUE
+-This mode of operation involves one producer and 4 consumers so there are 5 total threads or rather processes in xinu.
+-We first allocate memory to the future, the memory to the future is allocated using getmem system call
+-The producer will then call the future_set system call created in future.c. If the mode is FUTURE_SHARED and the state is FUTURE_EMPTY or FUTURE_WAITING we disable all the interrupts and get the current process id of the process in the system.
+-In the FUTURE_QUEUE mode we check if the last element in the queue is empty or no. If the get queue is empty then we add the process in the set queue and if the get queue is not empty then we dequeuer that process from the get_queue and resume that process by changing the state of the process as FUTURE_READY.
+-We first check the set queue if for reading the values from the buffer, if the set queue is empty then we directly add the process id in the get queue and suspend the process however if the set queue is no empty then we dequeue or rather remove the element from the set queue and resume the blocked process. We also check if the get queue is null if it is then we change the process state to future waiting and for the consumer to read the values and if the get queue is empty we change the state of the future as FUTURE_EMPTY 
+
+
+
